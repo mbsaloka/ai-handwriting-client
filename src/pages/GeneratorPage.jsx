@@ -2,29 +2,42 @@ import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft } from "lucide-react"
 import { Link } from "react-router-dom"
+import { Client } from "@gradio/client";
 
 import PreviewCanvas from "@/components/PreviewCanvas"
 import ControlsPanel from "@/components/ControlsPanel"
 import HandwritingToolbar from "@/components/HandwritingToolbar"
 import { convertPointsToSVGPath } from "@/components/utils"
 
-const fetchHandwritingStrokes = async (text, bias /*, style*/) => {
-  const API_URL = import.meta.env.VITE_API_URL;
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text, bias }),
-  })
+const fetchHandwritingStrokes = async (text, bias, style) => {
+  const backendType = import.meta.env.VITE_BACKEND_TYPE
+  if (backendType === "gradio") {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const client = await Client.connect(API_URL);
+    const result = await client.predict("/predict", {
+        text: text,
+        bias: bias,
+    });
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch handwriting strokes")
+    return result.data[0]
+  } else if (backendType === "fastapi") {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text, bias, style })
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch handwriting strokes")
+    }
+
+    const data = await response.json()
+
+    return data.strokes
   }
-
-  const data = await response.json()
-
-  return data.strokes
 }
 
 function GeneratorPage() {
@@ -35,7 +48,7 @@ function GeneratorPage() {
   const [animationSpeed, setAnimationSpeed] = useState(10)
   const [strokeWidth, setStrokeWidth] = useState(2)
   const [bias, setBias] = useState(2.0)
-  const [style, setStyle] = useState("normal")
+  const [style, setStyle] = useState("0")
   const [enableAnimation, setEnableAnimation] = useState(true)
   const [displayedPoints, setDisplayedPoints] = useState([])
   const [scale, setScale] = useState(2.0)
@@ -53,7 +66,7 @@ function GeneratorPage() {
 
     setIsGenerating(true)
     try {
-      const newStrokes = await fetchHandwritingStrokes(inputText, bias, style)
+      const newStrokes = await fetchHandwritingStrokes(inputText, bias, parseInt(style))
       setStrokes(newStrokes)
 
       // Reset animation

@@ -51,7 +51,17 @@ function ControlsPanel({
           <Select value={style} onValueChange={setStyle}>
             <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="normal" className="cursor-pointer hover:!bg-background">Normal</SelectItem>
+              <SelectItem value="0" className="cursor-pointer hover:!bg-background">Random</SelectItem>
+              <SelectItem value="1" className="cursor-pointer hover:!bg-background">Style 1</SelectItem>
+              <SelectItem value="2" className="cursor-pointer hover:!bg-background">Style 2</SelectItem>
+              <SelectItem value="3" className="cursor-pointer hover:!bg-background">Style 3</SelectItem>
+              <SelectItem value="4" className="cursor-pointer hover:!bg-background">Style 4</SelectItem>
+              <SelectItem value="5" className="cursor-pointer hover:!bg-background">Style 5</SelectItem>
+              <SelectItem value="6" className="cursor-pointer hover:!bg-background">Style 6</SelectItem>
+              <SelectItem value="7" className="cursor-pointer hover:!bg-background">Style 7</SelectItem>
+              <SelectItem value="8" className="cursor-pointer hover:!bg-background">Style 8</SelectItem>
+              <SelectItem value="9" className="cursor-pointer hover:!bg-background">Style 9</SelectItem>
+              <SelectItem value="10" className="cursor-pointer hover:!bg-background">Style 10</SelectItem>
             </SelectContent>
           </Select>
         </div>
