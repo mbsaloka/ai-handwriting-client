@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Client } from "@gradio/client";
 
@@ -9,7 +9,7 @@ import ControlsPanel from "@/components/ControlsPanel"
 import HandwritingToolbar from "@/components/HandwritingToolbar"
 import { convertPointsToSVGPath } from "@/components/utils"
 
-const fetchHandwritingStrokes = async (text, bias, style) => {
+const fetchHandwritingStrokes = async (text, bias, style, primeStroke, primeText) => {
   const backendType = import.meta.env.VITE_BACKEND_TYPE
   if (backendType === "gradio") {
     const API_URL = import.meta.env.VITE_API_URL;
@@ -27,7 +27,7 @@ const fetchHandwritingStrokes = async (text, bias, style) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text, bias, style })
+      body: JSON.stringify({ text, bias, style, primeStroke, primeText })
     })
 
     if (!response.ok) {
@@ -49,6 +49,8 @@ function GeneratorPage() {
   const [strokeWidth, setStrokeWidth] = useState(2)
   const [bias, setBias] = useState(2.0)
   const [style, setStyle] = useState("0")
+  const [primeStroke, setPrimeStroke] = useState(null)
+  const [primeText, setPrimeText] = useState(null)
   const [enableAnimation, setEnableAnimation] = useState(true)
   const [displayedPoints, setDisplayedPoints] = useState([])
   const [scale, setScale] = useState(2.0)
@@ -66,7 +68,7 @@ function GeneratorPage() {
 
     setIsGenerating(true)
     try {
-      const newStrokes = await fetchHandwritingStrokes(inputText, bias, parseInt(style))
+      const newStrokes = await fetchHandwritingStrokes(inputText, bias, parseInt(style), primeStroke, primeText)
       setStrokes(newStrokes)
 
       // Reset animation
@@ -209,15 +211,23 @@ function GeneratorPage() {
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <Link
-            to="/"
-            className="text-muted-foreground hover:text-primary flex items-center group transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 mr-1 transition-colors group-hover:text-primary" />
-            <span className="text-base">Back to Home</span>
-          </Link>
-        </div>
+      <div className="mb-8 flex justify-between items-center">
+        <Link
+          to="/"
+          className="text-muted-foreground hover:text-primary flex items-center group transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5 mr-1 transition-colors group-hover:text-primary" />
+          <span className="text-base">Back to Home</span>
+        </Link>
+
+        <Link
+          to="/custom-style"
+          className="text-muted-foreground hover:text-primary flex items-center group transition-colors"
+        >
+          <span className="text-base">Create Custom Style</span>
+          <ChevronRight className="w-5 h-5 ml-1 transition-colors group-hover:text-primary" />
+        </Link>
+      </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Controls */}
@@ -230,6 +240,8 @@ function GeneratorPage() {
             setBias={setBias}
             style={style}
             setStyle={setStyle}
+            setPrimeStroke={setPrimeStroke}
+            setPrimeText={setPrimeText}
             enableAnimation={enableAnimation}
             setEnableAnimation={setEnableAnimation}
             animationSpeed={animationSpeed}
